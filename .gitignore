@@ -1,0 +1,67 @@
+# ----------------------------
+# 🌍 Terraform-specific files
+# ----------------------------
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform/
+.terraform.lock.hcl
+
+# ----------------------------
+# 🔑 Sensitive credentials
+# ----------------------------
+*.pem
+*.key
+*.cer
+*.pfx
+*.crt
+*.csr
+*.pub
+*.json
+secrets.tfvars
+private.tfvars
+*.bak
+
+# ----------------------------
+# 🧰 IDE / Editor junk
+# ----------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# ----------------------------
+# 🐍 Python (if using automation scripts)
+# ----------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env
+venv/
+.venv/
+
+# ----------------------------
+# 🪣 OS-specific temp files
+# ----------------------------
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# ----------------------------
+# 🚀 Miscellaneous
+# ----------------------------
+*.zip
+*.tar.gz
+*.rar
+*.bak
