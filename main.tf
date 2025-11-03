@@ -1,25 +1,94 @@
 # 1. Create Resource Group
-resource "azurerm_resource_group" "rg" {
-  name     = "rg-terraform-storage"
-  location = "Central India"
+resource "azurerm_resource_group" "example" {
+  name     = "${var.prefix}-resources"
+  location = "Central US"
 }
 
 # 2. Create Storage Account
-resource "azurerm_storage_account" "storage" {
-  name                     = "arundemostorageacct"   # must be globally unique
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
+# resource "azurerm_storage_account" "storage" {
+#   name                     = "arundemostorageacct"   # must be globally unique
+#   resource_group_name      = azurerm_resource_group.rg.name
+#   location                 = azurerm_resource_group.rg.location
+#   account_tier             = "Standard"
+#   account_replication_type = "LRS"
 
-  tags = {
-    environment = "dev"
+#   tags = {
+#     environment = "dev"
+#   }
+# }
+
+# 3. Create Blob Container
+# resource "azurerm_storage_container" "container" {
+#   name                  = "terraformstate"
+#   storage_account_name  = azurerm_storage_account.storage.name
+#   container_access_type = "private"
+# }
+
+
+## Creating VNET with address space, rg and location
+resource "azurerm_virtual_network" "main" {
+  name                = "${var.prefix}-network"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+## Creating subnet with name, rg, vnet, adress prefixes
+resource "azurerm_subnet" "internal" {
+  name                 = "internal"
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.main.name
+  address_prefixes     = ["10.0.2.0/24"]
+}
+
+## Creating network interfaces with name, location and rg
+resource "azurerm_network_interface" "main" {
+  name                = "${var.prefix}-nic"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  ip_configuration {
+    name                          = "testconfiguration1"
+    subnet_id                     = azurerm_subnet.internal.id
+    private_ip_address_allocation = "Dynamic"
   }
 }
 
-# 3. Create Blob Container
-resource "azurerm_storage_container" "container" {
-  name                  = "terraformstate"
-  storage_account_name  = azurerm_storage_account.storage.name
-  container_access_type = "private"
+## Creating azure VM with name, location, rg, network interface, vm size
+resource "azurerm_virtual_machine" "main" {
+  name                  = "${var.prefix}-vm"
+  location              = azurerm_resource_group.example.location
+  resource_group_name   = azurerm_resource_group.example.name
+  network_interface_ids = [azurerm_network_interface.main.id]
+  vm_size               = "Standard_B1ls"
+
+  # Uncomment this line to delete the OS disk automatically when deleting the VM
+  delete_os_disk_on_termination = true
+
+  # Uncomment this line to delete the data disks automatically when deleting the VM
+  delete_data_disks_on_termination = true
+
+  storage_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+  storage_os_disk {
+    name              = "myosdisk1"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+  os_profile {
+    computer_name  = "hostname"
+    admin_username = "testadmin"
+    admin_password = "Password1234!"
+  }
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+  tags = {
+    environment = "staging"
+  }
 }
