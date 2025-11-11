@@ -27,7 +27,7 @@ override.tf.json
 secrets.tfvars
 private.tfvars
 *.bak
-
+id_rsa
 # ----------------------------
 # 🧰 IDE / Editor junk
 # ----------------------------

@@ -1,7 +1,7 @@
 # 1. Create Resource Group
 resource "azurerm_resource_group" "example" {
   name     = "${var.prefix}-resources"
-  location = "Central US"
+  location = var.rg_location
 }
 
 # 2. Create Storage Account
@@ -99,10 +99,14 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc" {
 # Linux Virtual Machine
 # -------------------------
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                = "${var.prefix}-demo-vm"
+  for_each = tomap({
+    name1 = "demo-vm-1"
+    name2 = "demo-vm-2"
+  })
+  name                = each.value
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
-  size                = "Standard_B1s"
+  size                = var.vm_size
   admin_username      = "azureuser"
   network_interface_ids = [azurerm_network_interface.main.id]
 
